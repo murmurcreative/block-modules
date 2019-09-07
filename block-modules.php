@@ -17,9 +17,14 @@ use TinyPixel\Modules\Runtime;
 (new class {
     /**
      * Plugin runtime
+     *
+     * @param  string $directory
+     * @return void
      */
-    public function __invoke(string $directory)
+    public function __invoke() : void
     {
-        $runtime = new Runtime($directory);
+        $runtime = new Runtime(
+            realpath(__DIR__ . '/..')
+        );
     }
-})(__DIR__ . '/..');
+})();

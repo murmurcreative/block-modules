@@ -1,7 +1,7 @@
 import { __ } from '@wordpress/i18n'
 import { Fragment } from '@wordpress/element'
 import { registerBlockType } from '@wordpress/blocks'
-import { RichText, InnerBlocks } from '@wordpress/editor'
+import { RichText, InnerBlocks } from '@wordpress/block-editor'
 
 registerBlockType('example/block', {
   title: __('Example', 'example'),
@@ -9,7 +9,6 @@ registerBlockType('example/block', {
   attributes: {
     heading: {
       type: 'string',
-      default: 'Hello, world!',
     },
   },
   edit: props => (

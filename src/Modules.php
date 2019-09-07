@@ -51,27 +51,15 @@ class Modules
     {
         self::$blocks->each(function ($block) {
             register_block_type($block['handle'], [
-                'editor_script' => $block['entry'],
-                'render_callback' => [$this, 'render', $block],
+                'editor_script'   => $block['entry'],
+                'render_callback' => function ($attr, $content) use ($block) {
+                    return self::$View->run(
+                        $this->template($block['handle']),
+                        ['attr' => (object) $attr, 'content' => $content]
+                    );
+                },
             ]);
         });
-    }
-
-    /**
-     * Renders Template
-     *
-     * @param  array  $attributes
-     * @param  string $content
-     * @param  array  $options
-     *
-     * @return void
-     */
-    public function render(array $attr, string $content, array $options)
-    {
-        self::$View->run($this->template($options['name']), [
-            'attr'    => (object) $attr,
-            'content' => $content,
-        ]);
     }
 
     /**
@@ -80,7 +68,7 @@ class Modules
      * @param  string $blockName
      * @return string
      */
-    public function template(string $blockName)
+    public function template(string $blockName) : string
     {
         $block = self::$blocks->where('handle', $blockName);
 
@@ -88,5 +76,17 @@ class Modules
         $pluginName = $block->pluck('plugin')->first();
 
         return "{$pluginName}/src/{$fileName}";
+    }
+
+    public function setUser(\WP_User $user)
+    {
+        if ($user->ID === 0) {
+            return;
+        }
+
+        self::$View->setAuth(
+            $user->data->user_nicename,
+            $user->roles[0]
+        );
     }
 }

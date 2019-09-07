@@ -1,12 +1,6 @@
 # Block Modules
 
-Plugin backbone for modular block building.
-
-`Block Modules` allows you to separate blocks or small sets of blocks into individuated plugins, should you not want to put all of your eggs into one basket. All of these blocks are rendered using the Laravel Blade templating engine. If you want to know more about the general idea, check out my [Block Compose library](https://github.com/kellymears/blockcompose). This is the same idea, but using an arguably safer, distributed appproach.
-
-This plugin also lets you render blocks using Blade _even if you don't have access to it otherwise_ (as in: outside of a Roots context).
-
-Both this and `Block Compose` are works in progress. `BlockCompose` is intended for use with [Roots` Clover plugin framework](https://roots.io/clover/), which is still in alpha. It's likely that primary development of this plugin will be completed sooner than that.
+Plugin backbone for modular block building using Laravel Blade and React.
 
 ## Usage
 
@@ -45,9 +39,38 @@ add_filter('register_blockmodules', function ($blocks) {
 - `entry` is your main JS file, relative to `{plugin-name}/src`
 - `blade` is your blade view for the frontend, relative to `{plugin-name}/src`.
 
+## Write a view
+
+Now you can use the specified blade partial to render your block. You'll find the block attributes and inner content already waiting for you.
+
+```php
+<h2>{!! $attr->heading !!}</h2>
+<span>{!! $attr->accentText !!}</span>
+
+<div class="innerBlocks">
+  {!! $content !!}
+</div>
+```
+
+## Other tricks
+
+Do different stuff depending on the access level of the user:
+
+```php
+@auth('administrator')
+  <p>This user is an admin!</p>
+@endauth
+
+@guest
+  <p>Only guests can see this.</p>
+@endguest
+```
+
+
+
 ## Blade for everyone
 
-If `Roots\view()` is available the blade templates will be rendered using that. If it is not available, my condolences, but you can still use Blade thanks to [EFTEC\BladeOne](https://github.com/EFTEC/BladeOne), a minimalist blade implementation which will be automatically substituted.
+Under the hood this plugin uses [EFTEC\BladeOne](https://github.com/EFTEC/BladeOne), a minimalist blade implementation that does not require any particular plugin or framework and has zero dependencies.
 
 ## Example
 

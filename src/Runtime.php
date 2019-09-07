@@ -5,6 +5,7 @@ use \add_action;
 use Illuminate\Support\Collection;
 use eftec\bladeone\BladeOne as Blade;
 use TinyPixel\Modules\Modules;
+use TinyPixel\Modules\Traits\Dependencies;
 
 /**
  * Plugin runtime
@@ -16,6 +17,8 @@ use TinyPixel\Modules\Modules;
  */
 class Runtime
 {
+    use Dependencies;
+
     /**
      * Block Modules
      *
@@ -42,26 +45,52 @@ class Runtime
      *
      * @var string
      */
-    public static $pluginsPath;
+    public static $basePath;
+
+    /**
+     * Debugger
+     *
+     * @var bool
+     */
+    public static $mode;
+
+    /**
+     * Cache path
+     *
+     * @var string
+     */
+    public static $cachePath;
 
     /**
      * Class constructor
      *
      */
-    public function __construct($pluginsPath)
+    public function __construct(string $basePath)
     {
-        add_action('init', function () use ($pluginsPath) {
-            self::$Modules = new Modules(
-                self::$blocks = apply_filters(
-                    'register_blockmodules',
-                    Collection::make()
-                ),
-                self::$View = new Blade(
-                    self::$pluginsPath = $pluginsPath,
-                    wp_upload_dir('block_modules')['path'],
-                    Blade::MODE_AUTO
-                )
-            );
+        add_action('init', function () use ($basePath) {
+            $cachePath = wp_upload_dir('block_modules')['path'];
+
+            $blocks = Collection::make();
+
+            self::$cachePath = has_filter('cache_path_blockmodules')
+                ? apply_filters('cache_path_blockmodules', $cachePath)
+                : $cachePath;
+
+            self::$basePath = has_filter('base_path_blockmodules')
+                ? apply_filters('base_path_blockmodules', $basePath)
+                : $basePath;
+
+            self::$blocks = has_filter('register_blockmodules')
+                ? apply_filters('register_blockmodules', $blocks)
+                : $blocks;
+
+            self::$Modules = new Modules(self::$blocks, new Blade(
+                self::$basePath,
+                self::$cachePath,
+                Blade::MODE_AUTO
+            ));
+
+            self::$Modules->setUser(\wp_get_current_user());
 
             self::$Modules->registerTemplates();
         });
@@ -97,10 +126,7 @@ class Runtime
      */
     private static function asset(array $block) : string
     {
-        return plugins_url(
-            "{$block['plugin']}/dist/{$block['entry']}",
-            self::$pluginsPath
-        );
+        return plugins_url("{$block['plugin']}") . "/dist/{$block['entry']}";
     }
 
     /**
@@ -112,8 +138,6 @@ class Runtime
      */
     private static function deps(string $handle) : array
     {
-        return ($handle == 'block') ?
-            self::$blockDeps :
-            self::$extensionDeps;
+        return ($handle == 'block') ? self::$blockDeps : self::$blockDeps;
     }
 }
