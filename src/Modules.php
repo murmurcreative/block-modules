@@ -39,6 +39,7 @@ class Modules
     public function __construct(Collection $blocks, Blade $view)
     {
         self::$blocks = $blocks;
+
         self::$View   = $view;
     }
 
@@ -47,15 +48,24 @@ class Modules
      *
      * @return void
      */
-    public function registerTemplates() : void
+    public function registerViews() : void
     {
         self::$blocks->each(function ($block) {
+            if (is_null($block['blade'])) {
+                return;
+            }
+
             register_block_type($block['handle'], [
-                'editor_script'   => $block['entry'],
+                'editor_script' => $block['entry'],
                 'render_callback' => function ($attr, $content) use ($block) {
+                    $data = [
+                        'attr' => (object) $attr,
+                        'content' => $content,
+                    ];
+
                     return self::$View->run(
-                        $this->template($block['handle']),
-                        ['attr' => (object) $attr, 'content' => $content]
+                        $this->view($block['handle']),
+                        $data
                     );
                 },
             ]);
@@ -63,12 +73,12 @@ class Modules
     }
 
     /**
-     * Returns template path
+     * Returns view
      *
      * @param  string $blockName
      * @return string
      */
-    public function template(string $blockName) : string
+    public function view(string $blockName) : string
     {
         $block = self::$blocks->where('handle', $blockName);
 

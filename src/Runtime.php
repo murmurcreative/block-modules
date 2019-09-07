@@ -48,18 +48,12 @@ class Runtime
     public static $basePath;
 
     /**
-     * Debugger
-     *
-     * @var bool
-     */
-    public static $mode;
-
-    /**
      * Cache path
      *
      * @var string
      */
     public static $cachePath;
+
 
     /**
      * Class constructor
@@ -68,40 +62,73 @@ class Runtime
     public function __construct(string $basePath)
     {
         add_action('init', function () use ($basePath) {
-            $cachePath = wp_upload_dir('block_modules')['path'];
+            self::$basePath  = $this->filter('base_path_blockmodules', $basePath);
+            self::$cachePath = $this->filter('cache_path_blockmodules', wp_upload_dir('block_modules')['path']);
+            self::$blocks    = $this->filter('register_blockmodules', Collection::make());
 
-            $blocks = Collection::make();
-
-            self::$cachePath = has_filter('cache_path_blockmodules')
-                ? apply_filters('cache_path_blockmodules', $cachePath)
-                : $cachePath;
-
-            self::$basePath = has_filter('base_path_blockmodules')
-                ? apply_filters('base_path_blockmodules', $basePath)
-                : $basePath;
-
-            self::$blocks = has_filter('register_blockmodules')
-                ? apply_filters('register_blockmodules', $blocks)
-                : $blocks;
-
-            self::$Modules = new Modules(self::$blocks, new Blade(
+            /**
+             * \eftec\bladeone\BladeOne
+             */
+            self::$View = new Blade(
                 self::$basePath,
                 self::$cachePath,
-                Blade::MODE_AUTO
-            ));
+                self::mode($this->filter('debug_blockmodules', Blade::MODE_AUTO))
+            );
 
-            self::$Modules->setUser(\wp_get_current_user());
+            /**
+             * \TinyPixel\Modules\Modules
+             */
+            self::$Modules = new Modules(self::$blocks, self::$View);
 
-            self::$Modules->registerTemplates();
+            /**
+             * Enable @user, @guest, et al.
+             */
+            if (!$this->filter('disable_user_blockmodules', false)) {
+                self::$Modules->setUser(\wp_get_current_user());
+            }
+
+            /**
+             * Register views with WordPress
+             */
+            self::$Modules->registerViews();
         });
 
+        /**
+         * Enqueue assets
+         */
         add_action('enqueue_block_editor_assets', function () {
             self::enqueue(self::$blocks);
         });
     }
 
     /**
-     * Enqueues blocks
+     * Return filter result or default
+     *
+     * @param  string $filter
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function filter(string $filter, $default)
+    {
+        if (!has_filter($filter)) {
+            return $default;
+        }
+
+        return apply_filters($filter, $default);
+    }
+
+    /**
+     * Set blade engine debug mode
+     *
+     * @return \eftec\bladeone\BladeOne
+     */
+    private static function mode($mode)
+    {
+        return $mode == 'debug' ? Blade::MODE_DEBUG : Blade::MODE_AUTO;
+    }
+
+    /**
+     * Enqueue block (editor scripts)
      *
      * @param \Illuminate\Support\Collection $blocks
      * @return void
@@ -109,35 +136,10 @@ class Runtime
     private static function enqueue(Collection $blocks) : void
     {
         $blocks->each(function ($block) {
-            wp_enqueue_script(
-                $block['handle'],
-                self::asset($block),
-                self::deps($block['handle']),
-                ...['', true],
-            );
+            $assetUrl     = plugins_url("{$block['plugin']}/dist/{$block['entry']}");
+            $dependencies = isset($block['extension']) ? self::$extensionDeps : self::$blockDeps;
+
+            wp_enqueue_script($block['handle'], $assetUrl, $dependencies, ...['', true]);
         });
-    }
-
-    /**
-     * Returns plugin asset path
-     *
-     * @param  string $block
-     * @param  string $path
-     */
-    private static function asset(array $block) : string
-    {
-        return plugins_url("{$block['plugin']}") . "/dist/{$block['entry']}";
-    }
-
-    /**
-     * Returns dependencies depending on if
-     * script is specified as a block or plugin
-     *
-     * @param  string $handle
-     * @return array
-     */
-    private static function deps(string $handle) : array
-    {
-        return ($handle == 'block') ? self::$blockDeps : self::$blockDeps;
     }
 }

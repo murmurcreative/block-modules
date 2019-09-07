@@ -12,7 +12,7 @@ add_filter('register_blockmodules', function ($blocks) {
       'handle' => 'example/block',
       'entry'  => 'index.js',
       'blade'  => 'blade/render',
-  ]);
+    ]);
 
     return $blocks;
 });

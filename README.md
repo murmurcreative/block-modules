@@ -66,7 +66,31 @@ Do different stuff depending on the access level of the user:
 @endguest
 ```
 
+## Tweak settings with filters (optional)
 
+Modify where cached views are stored:
+
+```php
+add_filter('cache_path_blockmodules', function ($cachePath) {
+  return '/cache/to/this/dir';
+});
+```
+
+Change the base directory used to located view templates:
+
+```php
+add_filter('base_path_blockmodules', function ($basePath) {
+  return '/views/relative/from/this/dir';
+});
+```
+
+Disable user functions (saves the database call):
+
+```php
+add_filter('disable_user_blockmodules', function () {
+  return true;
+});
+```
 
 ## Blade for everyone
 

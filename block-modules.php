@@ -21,10 +21,8 @@ use TinyPixel\Modules\Runtime;
      * @param  string $directory
      * @return void
      */
-    public function __invoke() : void
+    public function __invoke($pluginsDir) : void
     {
-        $runtime = new Runtime(
-            realpath(__DIR__ . '/..')
-        );
+        $runtime = new Runtime(realpath($pluginsDir));
     }
-})();
+})(__DIR__ . '/..');
