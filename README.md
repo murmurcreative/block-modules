@@ -92,6 +92,14 @@ add_filter('disable_user_blockmodules', function () {
 });
 ```
 
+Enable view debugger:
+
+```php
+add_filter('debug_blockmodules', function () {
+  return true;
+})
+```
+
 ## Blade for everyone
 
 Under the hood this plugin uses [EFTEC\BladeOne](https://github.com/EFTEC/BladeOne), a minimalist blade implementation that does not require any particular plugin or framework and has zero dependencies.
