@@ -52,6 +52,10 @@ Now you can use the specified blade partial to render your block. You'll find th
 </div>
 ```
 
+## Or, don't write a view
+
+Don't set a value for blade if you want to render with JS.
+
 ## Other tricks
 
 Do different stuff depending on the access level of the user:
