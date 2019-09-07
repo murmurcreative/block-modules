@@ -3,14 +3,15 @@
   "type": "wordpress-plugin",
   "version": "0.1.0",
   "description": "Simple lightweight button for pros to style on",
-  "keywords": [
-    "laravel",
-    "blade",
-    "template",
-    "wordpress",
-    "gutenberg",
-    "blocks"
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Kelly Mears",
+      "homepage": "https://tinypixel.dev"
+    }
   ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "php": ">=5",
     "composer/installers": "v1.4",
@@ -23,16 +24,7 @@
       "vendor/tightenco/collect/src/Collect/Support/alias.php"
     ],
     "psr-4": {
-      "TinyPixel\\Blocks\\": "./"
+      "TinyPixel\\Modules\\": ["./", "./src"]
     }
-  },
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Kelly Mears",
-      "homepage": "https://tinypixel.dev"
-    }
-  ],
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  }
 }
