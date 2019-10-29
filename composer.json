@@ -14,7 +14,7 @@
   "prefer-stable": true,
   "require": {
     "php": ">=5",
-    "composer/installers": "v1.4",
+    "composer/installers": "^1.4",
     "tightenco/collect": "^5.8",
     "eftec/bladeone": "^3.24"
   },
